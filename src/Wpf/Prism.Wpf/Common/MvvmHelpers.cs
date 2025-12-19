@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.ComponentModel;
 using Prism.Mvvm;
-#if HAS_WINUI
-using Windows.UI.Xaml;
-#else
-using System.Windows;
-#endif
 
 namespace Prism.Common
 {
@@ -15,8 +8,18 @@ namespace Prism.Common
     /// </summary>
     public static class MvvmHelpers
     {
-#if HAS_WINUI
-        internal static void AutowireViewModel(object viewOrViewModel)
+#if UNO_WINUI
+        /// <summary>
+        /// Sets the AutowireViewModel property to true for the <paramref name="viewOrViewModel"/>.
+        /// </summary>
+        /// <remarks>
+        /// The AutoWireViewModel property will only be set to true if the view
+        /// is a <see cref="FrameworkElement"/>, the DataContext of the view is null, and
+        /// the AutoWireViewModel property of the view is null.
+        /// </remarks>
+        /// <param name="viewOrViewModel">The View or ViewModel.</param>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public static void AutowireViewModel(object viewOrViewModel)
         {
             if (viewOrViewModel is FrameworkElement view && view.DataContext is null && ViewModelLocator.GetAutowireViewModel(view) is null)
             {
@@ -24,7 +27,17 @@ namespace Prism.Common
             }
         }
 #else
-        internal static void AutowireViewModel(object viewOrViewModel)
+        /// <summary>
+        /// Sets the AutoWireViewModel property to true for the <paramref name="viewOrViewModel"/>.
+        /// </summary>
+        /// <remarks>
+        /// The AutoWireViewModel property will only be set to true if the view
+        /// is a <see cref="FrameworkElement"/>, the DataContext of the view is null, and
+        /// the AutoWireViewModel property of the view is null.
+        /// </remarks>
+        /// <param name="viewOrViewModel">The View or ViewModel.</param>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public static void AutowireViewModel(object viewOrViewModel)
         {
             if (viewOrViewModel is FrameworkElement view && view.DataContext is null && ViewModelLocator.GetAutoWireViewModel(view) is null)
             {
@@ -34,10 +47,10 @@ namespace Prism.Common
 #endif
 
         /// <summary>
-        /// Perform an <see cref="Action{T}"/> on a view and viewmodel.
+        /// Perform an <see cref="Action{T}"/> on a view and ViewModel.
         /// </summary>
         /// <remarks>
-        /// The action will be performed on the view and its viewmodel if they implement <typeparamref name="T"/>.
+        /// The action will be performed on the view and its ViewModel if they implement <typeparamref name="T"/>.
         /// </remarks>
         /// <typeparam name="T">The <see cref="Action{T}"/> parameter type.</typeparam>
         /// <param name="view">The view to perform the <see cref="Action{T}"/> on.</param>
@@ -54,15 +67,15 @@ namespace Prism.Common
         }
 
         /// <summary>
-        /// Get an implementer from a view or viewmodel.
+        /// Get an implementer from a View or ViewModel.
         /// </summary>
         /// <remarks>
         /// If the view implements <typeparamref name="T"/> it will be returned.
-        /// Otherwise if the view's datacontext implements <typeparamref name="T"/> it will be returned instead.
+        /// Otherwise if the view's <see cref="FrameworkElement.DataContext"/> implements <typeparamref name="T"/> it will be returned instead.
         /// </remarks>
         /// <typeparam name="T">The implementer type to get.</typeparam>
         /// <param name="view">The view to get <typeparamref name="T"/> from.</param>
-        /// <returns>view or viewmodel as <typeparamref name="T"/>.</returns>
+        /// <returns>View or ViewModel as <typeparamref name="T"/>.</returns>
         public static T GetImplementerFromViewOrViewModel<T>(object view) where T : class
         {
             if (view is T viewAsT)

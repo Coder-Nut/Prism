@@ -1,5 +1,3 @@
-﻿using Windows.UI.Xaml;
-
 namespace Prism.Mvvm
 {
     /// <summary>

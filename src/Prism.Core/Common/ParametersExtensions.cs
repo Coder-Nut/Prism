@@ -1,6 +1,8 @@
-﻿using System;
+#nullable enable
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Prism.Common
@@ -64,9 +66,12 @@ namespace Prism.Common
             {
                 if (string.Compare(kvp.Key, key, StringComparison.Ordinal) == 0)
                 {
-                    var success = TryGetValueInternal(kvp, typeof(T), out object valueAsObject);
-                    value = (T)valueAsObject;
-                    return success;
+                    var success = TryGetValueInternal(kvp, type, out var valueAsObject);
+                    if (valueAsObject is T valueAsT)
+                    {
+                        value = valueAsT;
+                        return success;
+                    }
                 }
             }
 
@@ -80,28 +85,30 @@ namespace Prism.Common
         /// <typeparam name="T">The type of the parameter to return</typeparam>
         /// <param name="parameters">A collection of parameters to search</param>
         /// <param name="key">The key of the parameter to find</param>
-        /// <returns>An IEnumberable{T} of all the values referenced by key</returns>
+        /// <returns>An IEnumerable{T} of all the values referenced by key</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static IEnumerable<T> GetValues<T>(this IEnumerable<KeyValuePair<string, object>> parameters, string key)
         {
-            List<T> values = new List<T>();
+            List<T> values = [];
             var type = typeof(T);
 
             foreach (var kvp in parameters)
             {
-                if (string.Compare(kvp.Key, key, StringComparison.Ordinal) == 0)
+                if (string.Compare(kvp.Key, key, StringComparison.Ordinal) == 0 &&
+                    TryGetValueInternal(kvp, type, out var value) &&
+                    value is T valueAsT)
                 {
-                    TryGetValueInternal(kvp, type, out var value);
-                    values.Add((T)value);
+                    values.Add(valueAsT);
                 }
             }
 
-            return values.AsEnumerable();
+            return values.ToArray();
         }
 
         private static bool TryGetValueInternal(KeyValuePair<string, object> kvp, Type type, out object value)
         {
             value = GetDefault(type);
+            var valueAsString = kvp.Value is string str ? str : kvp.Value?.ToString();
             var success = false;
             if (kvp.Value == null)
             {
@@ -117,9 +124,8 @@ namespace Prism.Common
                 success = true;
                 value = kvp.Value;
             }
-            else if (type.IsEnum)
+            else if (type.IsEnum && !string.IsNullOrEmpty(valueAsString))
             {
-                var valueAsString = kvp.Value.ToString();
                 if (Enum.IsDefined(type, valueAsString))
                 {
                     success = true;
@@ -144,20 +150,13 @@ namespace Prism.Common
         /// <summary>
         /// Checks to see if key exists in parameter collection
         /// </summary>
-        /// <param name="parameters">IEnumberable to search</param>
+        /// <param name="parameters">IEnumerable to search</param>
         /// <param name="key">The key to search the <paramref name="parameters"/> for existence</param>
         /// <returns><c>true</c> if key exists; <c>false</c> otherwise</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static bool ContainsKey(this IEnumerable<KeyValuePair<string, object>> parameters, string key) =>
             parameters.Any(x => string.Compare(x.Key, key, StringComparison.Ordinal) == 0);
 
-        private static object GetDefault(Type type)
-        {
-            if (type.IsValueType)
-            {
-                return Activator.CreateInstance(type);
-            }
-            return null;
-        }
+        private static object? GetDefault(Type type) => type.IsValueType ? Activator.CreateInstance(type) : null;
     }
 }

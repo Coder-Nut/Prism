@@ -1,10 +1,5 @@
-
-
-using System;
-using System.Linq;
-using System.Windows;
-using Prism.Regions;
-using Prism.Regions.Behaviors;
+using Prism.Navigation.Regions;
+using Prism.Navigation.Regions.Behaviors;
 using Prism.Wpf.Tests.Mocks;
 using Xunit;
 
@@ -43,8 +38,8 @@ namespace Prism.Wpf.Tests.Regions.Behaviors
             var adapter = new MockRegionAdapter();
             adapter.Accessor = accessor;
 
-            var behavior1 = this.GetBehavior(control1, accessor, adapter);
-            var behavior2 = this.GetBehavior(control2, accessor, adapter);
+            var behavior1 = GetBehavior(control1, accessor, adapter);
+            var behavior2 = GetBehavior(control2, accessor, adapter);
 
             behavior1.Attach();
             behavior2.Attach();
@@ -69,9 +64,9 @@ namespace Prism.Wpf.Tests.Regions.Behaviors
                 GetRegionName = d => "myRegionName"
             };
 
-            var behavior1 = this.GetBehavior(control1, accessor);
+            var behavior1 = GetBehavior(control1, accessor);
             behavior1.Attach();
-            var behavior2 = this.GetBehavior(control2, accessor);
+            var behavior2 = GetBehavior(control2, accessor);
             behavior2.Attach();
 
             accessor.UpdateRegions();
@@ -92,7 +87,7 @@ namespace Prism.Wpf.Tests.Regions.Behaviors
                 GetRegionName = d => "myRegionName"
             };
 
-            var behavior = this.GetBehavior(control, accessor);
+            var behavior = GetBehavior(control, accessor);
             behavior.Attach();
             accessor.UpdateRegions();
             IRegion region = RegionManager.GetObservableRegion(control).Value;
@@ -103,7 +98,7 @@ namespace Prism.Wpf.Tests.Regions.Behaviors
         }
 
         [StaFact]
-        public void BehaviorDoesNotPreventControlFromBeingGarbageCollected()
+        public async Task BehaviorDoesNotPreventControlFromBeingGarbageCollected()
         {
             var control = new MockFrameworkElement();
             WeakReference controlWeakReference = new WeakReference(control);
@@ -113,20 +108,21 @@ namespace Prism.Wpf.Tests.Regions.Behaviors
                 GetRegionName = d => "myRegionName"
             };
 
-            var behavior = this.GetBehavior(control, accessor);
+            var behavior = GetBehavior(control, accessor);
             behavior.Attach();
 
             Assert.True(controlWeakReference.IsAlive);
             GC.KeepAlive(control);
 
             control = null;
+            await Task.Delay(10);
             GC.Collect();
 
             Assert.False(controlWeakReference.IsAlive);
         }
 
         [StaFact]
-        public void BehaviorDoesNotPreventControlFromBeingGarbageCollectedWhenRegionWasCreated()
+        public async Task BehaviorDoesNotPreventControlFromBeingGarbageCollectedWhenRegionWasCreated()
         {
             var control = new MockFrameworkElement();
             WeakReference controlWeakReference = new WeakReference(control);
@@ -136,7 +132,7 @@ namespace Prism.Wpf.Tests.Regions.Behaviors
                 GetRegionName = d => "myRegionName"
             };
 
-            var behavior = this.GetBehavior(control, accessor);
+            var behavior = GetBehavior(control, accessor);
             behavior.Attach();
             accessor.UpdateRegions();
 
@@ -144,6 +140,7 @@ namespace Prism.Wpf.Tests.Regions.Behaviors
             GC.KeepAlive(control);
 
             control = null;
+            await Task.Delay(10);
             GC.Collect();
 
             Assert.False(controlWeakReference.IsAlive);
@@ -158,7 +155,7 @@ namespace Prism.Wpf.Tests.Regions.Behaviors
             {
                 GetRegionName = d => "myRegionName",
             };
-            var behavior = this.GetBehavior(control, accessor);
+            var behavior = GetBehavior(control, accessor);
             behavior.Attach();
 
             int startingCount = accessor.GetSubscribersCount();
@@ -168,7 +165,7 @@ namespace Prism.Wpf.Tests.Regions.Behaviors
             Assert.Equal<int>(startingCount - 1, accessor.GetSubscribersCount());
         }
 
-        [StaFact]
+        [StaFact()]
         public void ShouldCleanupBehaviorOnceRegionIsCreated()
         {
             var control = new MockFrameworkElement();
@@ -179,7 +176,7 @@ namespace Prism.Wpf.Tests.Regions.Behaviors
                 GetRegionName = d => "myRegionName"
             };
 
-            var behavior = this.GetBehavior(control, accessor);
+            var behavior = GetBehavior(control, accessor);
             WeakReference behaviorWeakReference = new WeakReference(behavior);
             behavior.Attach();
             accessor.UpdateRegions();
@@ -191,7 +188,7 @@ namespace Prism.Wpf.Tests.Regions.Behaviors
 
             Assert.False(behaviorWeakReference.IsAlive);
 
-            var behavior2 = this.GetBehavior(control2, accessor);
+            var behavior2 = GetBehavior(control2, accessor);
             WeakReference behaviorWeakReference2 = new WeakReference(behavior2);
             behavior2.Attach();
             accessor.UpdateRegions();

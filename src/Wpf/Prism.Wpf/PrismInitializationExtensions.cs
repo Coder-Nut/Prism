@@ -1,18 +1,9 @@
-﻿using Prism.Events;
-using Prism.Ioc;
+using Prism.Dialogs;
+using Prism.Events;
 using Prism.Modularity;
 using Prism.Mvvm;
-using Prism.Regions;
-using Prism.Regions.Behaviors;
-using Prism.Services.Dialogs;
-
-#if HAS_WINUI
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-#else
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-#endif
+using Prism.Navigation.Regions;
+using Prism.Navigation.Regions.Behaviors;
 
 namespace Prism
 {
@@ -26,27 +17,37 @@ namespace Prism
             });
         }
 
+#if UNO_WINUI
+        internal static void RegisterRequiredTypes(this IContainerRegistry containerRegistry)
+        {
+            containerRegistry.TryRegisterSingleton<IModuleCatalog, ModuleCatalog>();
+#else
         internal static void RegisterRequiredTypes(this IContainerRegistry containerRegistry, IModuleCatalog moduleCatalog)
         {
-            containerRegistry.RegisterInstance(moduleCatalog);
-            containerRegistry.RegisterSingleton<IDialogService, DialogService>();
-            containerRegistry.RegisterSingleton<IModuleInitializer, ModuleInitializer>();
-            containerRegistry.RegisterSingleton<IModuleManager, ModuleManager>();
-            containerRegistry.RegisterSingleton<RegionAdapterMappings>();
-            containerRegistry.RegisterSingleton<IRegionManager, RegionManager>();
-            containerRegistry.RegisterSingleton<IRegionNavigationContentLoader, RegionNavigationContentLoader>();
-            containerRegistry.RegisterSingleton<IEventAggregator, EventAggregator>();
-            containerRegistry.RegisterSingleton<IRegionViewRegistry, RegionViewRegistry>();
-            containerRegistry.RegisterSingleton<IRegionBehaviorFactory, RegionBehaviorFactory>();
-            containerRegistry.Register<IRegionNavigationJournalEntry, RegionNavigationJournalEntry>();
-            containerRegistry.Register<IRegionNavigationJournal, RegionNavigationJournal>();
-            containerRegistry.Register<IRegionNavigationService, RegionNavigationService>();
-            containerRegistry.Register<IDialogWindow, DialogWindow>(); //default dialog host
+            containerRegistry.TryRegisterInstance(moduleCatalog);
+#endif
+            containerRegistry.TryRegisterSingleton<IDialogService, DialogService>();
+            containerRegistry.TryRegisterSingleton<IModuleInitializer, ModuleInitializer>();
+            containerRegistry.TryRegisterSingleton<IModuleManager, ModuleManager>();
+            containerRegistry.TryRegisterSingleton<RegionAdapterMappings>();
+            containerRegistry.TryRegisterSingleton<IRegionManager, RegionManager>();
+            containerRegistry.TryRegisterSingleton<IRegionNavigationContentLoader, RegionNavigationContentLoader>();
+            containerRegistry.TryRegisterSingleton<IEventAggregator, EventAggregator>();
+            containerRegistry.TryRegisterSingleton<IRegionViewRegistry, RegionViewRegistry>();
+            containerRegistry.TryRegisterSingleton<IRegionBehaviorFactory, RegionBehaviorFactory>();
+            containerRegistry.TryRegister<IRegionNavigationJournalEntry, RegionNavigationJournalEntry>();
+            containerRegistry.TryRegister<IRegionNavigationJournal, RegionNavigationJournal>();
+            containerRegistry.TryRegister<IRegionNavigationService, RegionNavigationService>();
+            containerRegistry.TryRegister<IDialogWindow, DialogWindow>(); //default dialog host
         }
 
         internal static void RegisterDefaultRegionBehaviors(this IRegionBehaviorFactory regionBehaviors)
         {
+#if AVALONIA
+            regionBehaviors.AddIfMissing<BindRegionContextToAvaloniaObjectBehavior>(BindRegionContextToAvaloniaObjectBehavior.BehaviorKey);
+#else
             regionBehaviors.AddIfMissing<BindRegionContextToDependencyObjectBehavior>(BindRegionContextToDependencyObjectBehavior.BehaviorKey);
+#endif
             regionBehaviors.AddIfMissing<RegionActiveAwareBehavior>(RegionActiveAwareBehavior.BehaviorKey);
             regionBehaviors.AddIfMissing<SyncRegionContextWithHostBehavior>(SyncRegionContextWithHostBehavior.BehaviorKey);
             regionBehaviors.AddIfMissing<RegionManagerRegistrationBehavior>(RegionManagerRegistrationBehavior.BehaviorKey);
@@ -58,9 +59,14 @@ namespace Prism
 
         internal static void RegisterDefaultRegionAdapterMappings(this RegionAdapterMappings regionAdapterMappings)
         {
+#if !AVALONIA
             regionAdapterMappings.RegisterMapping<Selector, SelectorRegionAdapter>();
+#endif
             regionAdapterMappings.RegisterMapping<ItemsControl, ItemsControlRegionAdapter>();
             regionAdapterMappings.RegisterMapping<ContentControl, ContentControlRegionAdapter>();
+#if UNO_WINUI
+            regionAdapterMappings.RegisterMapping<NavigationView, NavigationViewRegionAdapter>();
+#endif
         }
 
         internal static void RunModuleManager(IContainerProvider containerProvider)

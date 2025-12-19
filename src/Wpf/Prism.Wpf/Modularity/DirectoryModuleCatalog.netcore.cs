@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -10,7 +10,7 @@ using Prism.Properties;
 namespace Prism.Modularity
 {
     /// <summary>
-    /// Represets a catalog created from a directory on disk.
+    /// Represents a catalog created from a directory on disk.
     /// </summary>
     /// <remarks>
     /// The directory catalog will scan the contents of a directory, locating classes that implement
@@ -18,7 +18,7 @@ namespace Prism.Modularity
     /// Assemblies are loaded into a new application domain with ReflectionOnlyLoad.  The application domain is destroyed
     /// once the assemblies have been discovered.
     ///
-    /// The diretory catalog does not continue to monitor the directory after it has created the initialze catalog.
+    /// The directory catalog does not continue to monitor the directory after it has created the initialize catalog.
     /// </remarks>
     public class DirectoryModuleCatalog : ModuleCatalog
     {
@@ -32,12 +32,12 @@ namespace Prism.Modularity
         /// </summary>
         protected override void InnerLoad()
         {
-            if (string.IsNullOrEmpty(this.ModulePath))
+            if (string.IsNullOrEmpty(ModulePath))
                 throw new InvalidOperationException(Resources.ModulePathCannotBeNullOrEmpty);
 
-            if (!Directory.Exists(this.ModulePath))
+            if (!Directory.Exists(ModulePath))
                 throw new InvalidOperationException(
-                    string.Format(CultureInfo.CurrentCulture, Resources.DirectoryNotFound, this.ModulePath));
+                    string.Format(CultureInfo.CurrentCulture, Resources.DirectoryNotFound, ModulePath));
 
             AppDomain childDomain = AppDomain.CurrentDomain;
 
@@ -46,12 +46,12 @@ namespace Prism.Modularity
                 List<string> loadedAssemblies = new List<string>();
 
                 var assemblies = (
-                                     from Assembly assembly in AppDomain.CurrentDomain.GetAssemblies()
-                                     where !(assembly is System.Reflection.Emit.AssemblyBuilder)
-                                        && assembly.GetType().FullName != "System.Reflection.Emit.InternalAssemblyBuilder"
-                                        && !String.IsNullOrEmpty(assembly.Location)
-                                     select assembly.Location
-                                 );
+                    from Assembly assembly in AppDomain.CurrentDomain.GetAssemblies()
+                    where !(assembly is System.Reflection.Emit.AssemblyBuilder)
+                        && assembly.GetType().FullName != "System.Reflection.Emit.InternalAssemblyBuilder"
+                        && !String.IsNullOrEmpty(assembly.Location)
+                    select assembly.Location
+                );
 
                 loadedAssemblies.AddRange(assemblies);
 
@@ -63,7 +63,7 @@ namespace Prism.Modularity
                         (InnerModuleInfoLoader)
                         childDomain.CreateInstanceFrom(loaderType.Assembly.Location, loaderType.FullName).Unwrap();
 
-                    this.Items.AddRange(loader.GetModuleInfos(this.ModulePath));
+                    Items.AddRange(loader.GetModuleInfos(ModulePath));
                 }
             }
             catch (Exception ex)
@@ -132,12 +132,14 @@ namespace Prism.Modularity
                 {
                     return loadedAssembly;
                 }
+
                 AssemblyName assemblyName = new AssemblyName(args.Name);
                 string dependentAssemblyFilename = Path.Combine(directory.FullName, assemblyName.Name + ".dll");
                 if (File.Exists(dependentAssemblyFilename))
                 {
                     return Assembly.ReflectionOnlyLoadFrom(dependentAssemblyFilename);
                 }
+
                 return Assembly.ReflectionOnlyLoad(args.Name);
             }
 
@@ -202,6 +204,7 @@ namespace Prism.Modularity
                     InitializationMode = onDemand ? InitializationMode.OnDemand : InitializationMode.WhenAvailable,
                     Ref = type.Assembly.EscapedCodeBase,
                 };
+
                 moduleInfo.DependsOn.AddRange(dependsOn);
                 return moduleInfo;
             }

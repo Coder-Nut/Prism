@@ -20,7 +20,6 @@ bld/
 
 # Visual Studio cache/options directory
 .vs/
-.vscode/
 .droidres/
 
 # DNX
@@ -203,3 +202,15 @@ FakesAssemblies/
 
 # MFractor
 .mfractor/
+
+# Jetbrains files
+.idea*
+
+# Binlog
+*.binlog
+
+# macOS
+.DS_Store
+
+# VSCode
+.mono

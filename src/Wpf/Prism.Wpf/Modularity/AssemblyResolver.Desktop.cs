@@ -1,9 +1,4 @@
-
-
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using Prism.Properties;
 
@@ -17,20 +12,20 @@ namespace Prism.Modularity
     {
         private readonly List<AssemblyInfo> registeredAssemblies = new List<AssemblyInfo>();
 
-        private bool handlesAssemblyResolve;
+        private bool _handlesAssemblyResolve;
 
         /// <summary>
         /// Registers the specified assembly and resolves the types in it when the AppDomain requests for it.
         /// </summary>
-        /// <param name="assemblyFilePath">The path to the assemly to load in the LoadFrom context.</param>
+        /// <param name="assemblyFilePath">The path to the assembly to load in the LoadFrom context.</param>
         /// <remarks>This method does not load the assembly immediately, but lazily until someone requests a <see cref="Type"/>
         /// declared in the assembly.</remarks>
         public void LoadAssemblyFrom(string assemblyFilePath)
         {
-            if (!this.handlesAssemblyResolve)
+            if (!_handlesAssemblyResolve)
             {
-                AppDomain.CurrentDomain.AssemblyResolve += this.CurrentDomain_AssemblyResolve;
-                this.handlesAssemblyResolve = true;
+                AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+                _handlesAssemblyResolve = true;
             }
 
             Uri assemblyUri = GetFileUri(assemblyFilePath);
@@ -46,7 +41,7 @@ namespace Prism.Modularity
             }
 
             AssemblyName assemblyName = AssemblyName.GetAssemblyName(assemblyUri.LocalPath);
-            AssemblyInfo assemblyInfo = this.registeredAssemblies.FirstOrDefault(a => assemblyName == a.AssemblyName);
+            AssemblyInfo assemblyInfo = registeredAssemblies.FirstOrDefault(a => assemblyName == a.AssemblyName);
 
             if (assemblyInfo != null)
             {
@@ -54,7 +49,7 @@ namespace Prism.Modularity
             }
 
             assemblyInfo = new AssemblyInfo() { AssemblyName = assemblyName, AssemblyUri = assemblyUri };
-            this.registeredAssemblies.Add(assemblyInfo);
+            registeredAssemblies.Add(assemblyInfo);
         }
 
         private static Uri GetFileUri(string filePath)
@@ -83,7 +78,7 @@ namespace Prism.Modularity
         {
             AssemblyName assemblyName = new AssemblyName(args.Name);
 
-            AssemblyInfo assemblyInfo = this.registeredAssemblies.FirstOrDefault(a => AssemblyName.ReferenceMatchesDefinition(assemblyName, a.AssemblyName));
+            AssemblyInfo assemblyInfo = registeredAssemblies.FirstOrDefault(a => AssemblyName.ReferenceMatchesDefinition(assemblyName, a.AssemblyName));
 
             if (assemblyInfo != null)
             {
@@ -116,7 +111,7 @@ namespace Prism.Modularity
         /// <filterpriority>2</filterpriority>
         public void Dispose()
         {
-            this.Dispose(true);
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
 
@@ -126,10 +121,10 @@ namespace Prism.Modularity
         /// <param name="disposing">When <see langword="true"/>, it is being called from the Dispose method.</param>
         protected virtual void Dispose(bool disposing)
         {
-            if (this.handlesAssemblyResolve)
+            if (_handlesAssemblyResolve)
             {
-                AppDomain.CurrentDomain.AssemblyResolve -= this.CurrentDomain_AssemblyResolve;
-                this.handlesAssemblyResolve = false;
+                AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
+                _handlesAssemblyResolve = false;
             }
         }
 

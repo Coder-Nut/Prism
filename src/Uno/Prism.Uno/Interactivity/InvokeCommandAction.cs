@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 using System.Windows.Input;
 using Microsoft.Xaml.Interactivity;
-using Windows.UI.Xaml;
+
 
 namespace Prism.Interactivity
 {
     /// <summary>
-    /// Trigger action that executes a command when invoked. 
+    /// Trigger action that executes a command when invoked.
     /// It also maintains the Enabled state of the target control based on the CanExecute method of the command.
     /// </summary>
     public partial class InvokeCommandAction : DependencyObject, IAction
@@ -17,14 +14,14 @@ namespace Prism.Interactivity
         private ExecutableCommandBehavior _commandBehavior;
 
         /// <summary>
-        /// Dependency property identifying if the associated element should automaticlaly be enabled or disabled based on the result of the Command's CanExecute
+        /// Dependency property identifying if the associated element should automatically be enabled or disabled based on the result of the Command's CanExecute
         /// </summary>
         public static readonly DependencyProperty AutoEnableProperty =
             DependencyProperty.Register("AutoEnable", typeof(bool), typeof(InvokeCommandAction),
                 new PropertyMetadata(true));
 
         /// <summary>
-        /// Gets or sets whther or not the associated element will automatically be enabled or disabled based on the result of the commands CanExecute
+        /// Gets or sets whether or not the associated element will automatically be enabled or disabled based on the result of the commands CanExecute
         /// </summary>
         public bool AutoEnable
         {
@@ -113,7 +110,7 @@ namespace Prism.Interactivity
 
         private ExecutableCommandBehavior GetOrCreateBehavior(UIElement sender)
         {
-            // In case this method is called prior to this action being attached, 
+            // In case this method is called prior to this action being attached,
             // the CommandBehavior would always keep a null target object (which isn't changeable afterwards).
             // Therefore, in that case the behavior shouldn't be created and this method should return null.
             if (_commandBehavior == null && sender != null)
@@ -131,7 +128,7 @@ namespace Prism.Interactivity
         /// <summary>
         /// A CommandBehavior that exposes a public ExecuteCommand method. It provides the functionality to invoke commands and update Enabled state of the target control.
         /// It is not possible to make the <see cref="InvokeCommandAction"/> inherit from <see cref="CommandBehaviorBase{T}"/>, since the <see cref="InvokeCommandAction"/>
-        /// must already inherit from <see cref="TriggerAction{T}"/>, so we chose to follow the aggregation approach.
+        /// must already inherit from <see cref="Trigger{T}"/>, so we chose to follow the aggregation approach.
         /// </summary>
         private class ExecutableCommandBehavior : CommandBehaviorBase<UIElement>
         {

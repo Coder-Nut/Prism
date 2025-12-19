@@ -1,11 +1,7 @@
 {
-  "sdk": {
-    "version": "3.1.402",
-    "rollForward": "latestMinor",
-    "allowPrerelease": false
-  },
   "msbuild-sdks": {
-    "MSBuild.Sdk.Extras": "2.1.2",
-    "Microsoft.Build.CentralPackageVersions": "2.0.79"
+    "Microsoft.Build.NoTargets": "3.7.56",
+    "MSBuild.Sdk.Extras": "3.0.44",
+    "Uno.Sdk": "6.4.20"
   }
 }
